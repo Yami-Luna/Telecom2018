@@ -7,33 +7,33 @@ CLICK_DECLS
 
 struct ICMPRouterAdvertisement
 {
-	uint8_t num_addr;
+	uint8_t advertisement_count;
 	uint8_t address_entry_size;
 	uint16_t lifetime;
 	IPAddress router_address;
-	uint32_t preference;
+	uint32_t preference_level;
 };
 
 struct MobileAgentAdvertisement
 {
 	uint8_t type;
 	uint8_t length;
-	uint16_t seq_nr;
-	uint16_t lifetime;
+	uint16_t sequence_number;
+	uint16_t registration_lifetime;
 	uint16_t flags;
 };
 
 class Advertisement : public Element {
 private:
 	uint16_t counter;
-	IPAddress _srcIP;
-	IPAddress _coaIP;
+	IPAddress _source;
+	IPAddress _careofaddress;
 	bool isHomeAgent;
 
 	Timer timer;
 
 	int _lifetime;
-	int _regLifetime;
+	int _registrationLifetime;
 
 public:
 	Advertisement();
