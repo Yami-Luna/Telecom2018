@@ -9,19 +9,31 @@
 
 CLICK_DECLS
 
-Advertisement::Advertisement() : counter(0) { }
+Advertisement::Advertisement() : timer(this), counter(0) { }
 
 Advertisement::~Advertisement() {}
 
 int Advertisement::configure(Vector<String> &conf, ErrorHandler *errh) {
 	if (cp_va_kparse(conf,this,errh, "SRC", cpkM, cpIPAddress, &_srcIP,
 					 "COA", cpkN, cpIPAddress, &_coaIP,
+					 "TIMER", cpkM, cpBool, &timerEnabled,
 					 "ISHOME", cpkM, cpBool, &isHomeAgent,
 					 "LIFETIME", cpkM, cpInteger, &_lifetime,
 					 "REGLIFETIME", cpkM, cpInteger, &_regLifetime,
 					 cpEnd) < 0) return -1;
 
+	if (timerEnabled)
+	{
+		timer.initialize(thiz);
+		timer.schedule_after_msec(0);
+	}
+
 	return 0;
+}
+
+void Advertisement::run_timer(Timer* t) {
+	timer.schedule_after_msec(900 + 200 * (rand() / RAND_MAX));
+	push_packet(0,true);
 }
 
 void Advertisement::push_packet(Packet *p, bool broadcast = false) {

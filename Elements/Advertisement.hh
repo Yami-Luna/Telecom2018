@@ -30,6 +30,8 @@ private:
 	IPAddress _coaIP;
 	bool isHomeAgent;
 
+	Timer timer;
+
 	int _lifetime;
 	int _regLifetime;
 
@@ -39,12 +41,14 @@ public:
 
 	const char *class_name() const { return "Advertisement"; }
 	const char *port_count() const { return "0-1/1"; }
-	cont char *processing() const { return PUSH; }
+	const char *processing() const { return PUSH; }
 
 	int configure(Vector<String> &, ErrorHandler *);
 
 	void push_packet(Packet *, bool);
 	void push(int, Packet *);
+
+	void run_timer(Timer *);
 };
 
 CLICK_ENDDECLS
