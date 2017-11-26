@@ -4,7 +4,7 @@
 #include <click/ipaddress.hh>
 #include <clicknet/ip.h>
 #include <clicknet/icmp.h>
-#include "solicitation.hh"
+#include "Solicitation.hh"
 #include "ipHeader.hh"
 
 CLICK_DECLS
