@@ -140,5 +140,4 @@ void Advertisement::push(int, Packet *p) {
 }
 
 CLICK_ENDDECLS
-ELEMENT_REQUIRES(IPHeader)
 EXPORT_ELEMENT(Advertisement)
