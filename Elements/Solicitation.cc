@@ -5,7 +5,6 @@
 #include <clicknet/ip.h>
 #include <clicknet/icmp.h>
 #include "Solicitation.hh"
-#include "ipHeader.hh"
 
 CLICK_DECLS
 
@@ -33,12 +32,12 @@ void Solicitation::sendSolicitation()
 	int offset = 0;
 	int tailroom = 0;
 	int headroom = sizeof(click_ip);
-	int packetsizsize = headroom + sizeof(click_icmp_echo);
+	int size = headroom + sizeof(click_icmp_echo);
 	WritablePacket * packet = Packet::make(headroom, 0, size, tailroom);
 	
 	if (packet == 0) {
 		click_chatter("Failed to make packet.");
-		p->kill();
+		packet->kill();
 		return;
 	}
 
@@ -56,24 +55,21 @@ void Solicitation::sendSolicitation()
 	ipheader->ip_ttl = 1;
 	ipheader->ip_p = 1;
 	ipheader->ip_src = src;
-	if (broadcast) {
-		ipheader->ip_dst = IPAddress("255.255.255.255");
-	} else {
-		ipheader->ip_dst = p->ip_header()->ip_src;
-	}
+	ipheader->ip_dst = dst;
 	packet->set_dst_ip_anno(ipheader->ip_dst);
 	ipheader->ip_sum = 0;
-	ipheader->ip_sum = click_in_cksum((const unsigned char *) ip, sizeof(click_ip));
+	ipheader->ip_sum = click_in_cksum((const unsigned char *) ipheader, sizeof(click_ip));
 
 	offset += sizeof(click_ip);
-	packet->set_network_header((unsigned char *) ip, sizeof(click_ip));
+	packet->set_network_header((unsigned char *) ipheader, sizeof(click_ip));
 
 	// ICMP Header
 	click_icmp_echo * icmp = (click_icmp_echo *) (packet->data() + offset);
 	icmp->icmp_type = 10;
 	icmp->icmp_code = 0;
 	icmp->icmp_identifier = 0;
-	icmp->icmp_sequence = htons(++counter);
+	ctr++;
+	icmp->icmp_sequence = htons(ctr);
 	icmp->icmp_cksum = click_in_cksum((const unsigned char *) icmp, sizeof(click_icmp_echo));
 
 	output(0).push(packet);
