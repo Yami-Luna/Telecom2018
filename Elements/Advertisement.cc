@@ -8,7 +8,7 @@
 
 CLICK_DECLS
 
-Advertisement::Advertisement() : timer(this), counter(0) { }
+Advertisement::Advertisement() : timer(this), ctr(0) { }
 
 Advertisement::~Advertisement() {}
 
@@ -65,7 +65,7 @@ void Advertisement::push_packet(Packet *p, bool broadcast = false) {
 	ipheader->ip_hl = 5;
 	ipheader->ip_tos = 0;
 	ipheader->ip_len = htons(size);
-	ipheader->ip_id = htons(counter);
+	ipheader->ip_id = htons(ctr);
 	ipheader->ip_off = 0;
 	ipheader->ip_ttl = 1;
 	ipheader->ip_p = 1;
@@ -87,13 +87,13 @@ void Advertisement::push_packet(Packet *p, bool broadcast = false) {
 	icmpheader->icmp_type = 9;
 	icmpheader->icmp_code = 0;
 	icmpheader->icmp_identifier = 0;
-	icmpheader->icmp_sequence = htons(counter);
+	icmpheader->icmp_sequence = htons(ctr);
 
 	//rollover handling
-	if (counter == 0xffff) {
-		counter = 256;
+	if (ctr == 0xffff) {
+		ctr = 256;
 	} else {
-		counter++;
+		ctr++;
 	}
 	offset += sizeof(click_icmp_echo) / 2;
 
@@ -110,7 +110,7 @@ void Advertisement::push_packet(Packet *p, bool broadcast = false) {
 	MobileAgentAdvertisment * maa = (MobileAgentAdvertisement *) (packet->data() + offset);
 	mma->type = 16
 	mma->length = 6;
-	mma->sequence_number = htons(counter);
+	mma->sequence_number = htons(ctr);
 	mma->registration_lifetime = htons(_registrationLifetime);
 
 	if (isHomeAgent) {

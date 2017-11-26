@@ -25,7 +25,7 @@ struct MobileAgentAdvertisement
 
 class Advertisement : public Element {
 private:
-	uint16_t counter;
+	uint16_t ctr;
 	IPAddress _source;
 	IPAddress _careofaddress;
 	bool isHomeAgent;
