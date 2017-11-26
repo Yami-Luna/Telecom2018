@@ -51,4 +51,9 @@ elementclass MobileNode {
 
 	in_cl[2]
 		-> ip;
+
+	//Send solicitations using handler
+	Soliciter :: Solicitation(SRC $address, DST 255.255.255.255)
+		-> EtherEncap(0x0800, $address:eth, FF:FF:FF:FF:FF:FF)
+		-> [0]output;
 }
