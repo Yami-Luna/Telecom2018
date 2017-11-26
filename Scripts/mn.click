@@ -21,27 +21,14 @@ elementclass MobileNode {
 		-> rt :: LinearIPLookup(
 			$address:ip/32 0,
 			$address:ipnet 1,
-			0.0.0.0/0 $gateway 1)
-		-> [1]output;
+			255.255.255.255 0,
+			0.0.0.0/0 $gateway 1);
 
-	rt[1]	-> ipgw :: IPGWOptions($address)
-		-> FixIPSrc($address)
-		-> ttl :: DecIPTTL
-		-> frag :: IPFragmenter(1500)
-		-> arpq :: ARPQuerier($address)
-		-> output;
-
-	ipgw[1]	-> ICMPError($address, parameterproblem)
-		-> output;
-
-	ttl[1]	-> ICMPError($address, timeexceeded)
-		-> output;
-
-	frag[1]	-> ICMPError($address, unreachable, needfrag)
-		-> output;
+	arpq :: ARPQuerier($address);
 
 	// incoming packets
 	input	-> HostEtherFilter($address)
+		-> etherTee :: Tee(2)
 		-> in_cl :: Classifier(12/0806 20/0001, 12/0806 20/0002, 12/0800)
 		-> arp_res :: ARPResponder($address)
 		-> output;
@@ -50,7 +37,52 @@ elementclass MobileNode {
 		-> [1]arpq;
 
 	in_cl[2]
+		-> Paint(1)
 		-> ip;
+
+	//If we receive an advertisement, we have to remember the ether source so we can send a registration to it
+	etherTee[1]
+		-> IPFilter(allow ip proto 1 and icmp type9, deny all)
+		-> res :: RememberEtherSource;
+
+	//local delivery
+	rt[0]	-> local :: Tee(2)
+		-> IPFilter(deny src udp port 434, deny dst udp port 434, deny icmp type 9, allow all)
+		-> IPPrint("MN --- Received a packet)
+		-> [1]output;
+
+	local[1]
+		-> localClassifier :: IPClassifier(ip proto 1 and icmp type 9, udp port 434);
+
+	//if we receive an advertisement, we send a registration request (unfinished implementation)
+	localClassifier[0]
+		-> regrequest :: RegRequest()
+		-> [0]arpq;
+
+	//if we receive a registration reply, we dump it for now
+	localClassifier[1]
+		-> Discard;
+
+
+	rt[1]	-> ipgw :: IPGWOptions($address)
+		-> FixIPSrc($address)
+		-> ttl :: DecIPTTL
+		-> frag :: IPFragmenter(1500)
+		-> EtherEncap(0x0800, ???, 00:00:00:00:00:00)
+		-> [1]res
+		-> output;
+
+	ipgw[1]
+		-> ICMPError($address, parameterproblem)
+		-> rt;
+
+	ttl[1]
+		-> ICMPError($address, timeexceeded)
+		-> rt;
+
+	frag[1]
+		-> ICMPError($address, unreachable, needfrag)
+		-> rt;
 
 	//Send solicitations using handler
 	Soliciter :: Solicitation(SRC $address, DST 255.255.255.255)
