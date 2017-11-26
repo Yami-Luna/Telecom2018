@@ -56,7 +56,7 @@ elementclass MobileNode {
 
 	//if we receive an advertisement, we send a registration request (unfinished implementation)
 	localClassifier[0]
-		-> regrequest :: RegRequest()
+		-> regrequest :: MNRegRequest()
 		-> [0]arpq;
 
 	//if we receive a registration reply, we dump it for now
