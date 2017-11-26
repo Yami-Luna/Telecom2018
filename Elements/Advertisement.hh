@@ -2,6 +2,7 @@
 #define CLICK_ADVERTISEMENT_HH
 
 #include <click/element.hh>
+#include <click/timer.hh>
 
 CLICK_DECLS
 

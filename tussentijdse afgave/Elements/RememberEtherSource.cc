@@ -6,7 +6,7 @@
 
 CLICK_DECLS
 
-RememberEtherSource::RememberEtherSource() : seh(0) {}
+RememberEtherSource::RememberEtherSource() : sourceetherheader(0) {}
 
 RememberEtherSource::~RememberEtherSource() {}
 

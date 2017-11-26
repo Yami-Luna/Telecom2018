@@ -13,6 +13,7 @@ Advertisement::Advertisement() : timer(this), ctr(0) { }
 Advertisement::~Advertisement() {}
 
 int Advertisement::configure(Vector<String> &conf, ErrorHandler *errh) {
+	bool timerEnabled;
 	if (cp_va_kparse(conf,this,errh, "SRC", cpkM, cpIPAddress, &_source,
 					 "COA", cpkN, cpIPAddress, &_careofaddress,
 					 "TIMER", cpkM, cpBool, &timerEnabled,
@@ -23,7 +24,7 @@ int Advertisement::configure(Vector<String> &conf, ErrorHandler *errh) {
 
 	if (timerEnabled)
 	{
-		timer.initialize(thiz);
+		timer.initialize(this);
 		timer.schedule_after_msec(0);
 	}
 
@@ -77,10 +78,10 @@ void Advertisement::push_packet(Packet *p, bool broadcast = false) {
 	}
 	packet->set_dst_ip_anno(ipheader->ip_dst);
 	ipheader->ip_sum = 0;
-	ipheader->ip_sum = click_in_cksum((const unsigned char *) ip, sizeof(click_ip));
+	ipheader->ip_sum = click_in_cksum((const unsigned char *) ipheader, sizeof(click_ip));
 
 	offset += sizeof(click_ip);
-	packet->set_network_header((unsigned char *) ip, sizeof(click_ip));
+	packet->set_network_header((unsigned char *) ipheader, sizeof(click_ip));
 
 	//initiate icmp header
 	click_icmp_echo * icmpheader = (click_icmp_echo *) (packet->data() + offset);
@@ -107,24 +108,24 @@ void Advertisement::push_packet(Packet *p, bool broadcast = false) {
 	offset += sizeof(ICMPRouterAdvertisement);
 
 	//set Mobile Agent Advertisement
-	MobileAgentAdvertisment * maa = (MobileAgentAdvertisement *) (packet->data() + offset);
-	mma->type = 16
-	mma->length = 6;
-	mma->sequence_number = htons(ctr);
-	mma->registration_lifetime = htons(_registrationLifetime);
+	MobileAgentAdvertisement * maa = (MobileAgentAdvertisement *) (packet->data() + offset);
+	maa->type = 16;
+	maa->length = 6;
+	maa->sequence_number = htons(ctr);
+	maa->registration_lifetime = htons(_registrationLifetime);
 
 	if (isHomeAgent) {
-		mma->flags = (1 << 13)
+		maa->flags = (1 << 13);
 		icmpheader->icmp_cksum = 0;
 		icmpheader->icmp_cksum = click_in_cksum((const unsigned char *) icmpheader, sizeof(click_icmp_echo) / 2 + sizeof(ICMPRouterAdvertisement) + sizeof(MobileAgentAdvertisement));
 	} else {
-		mma->length += 4;
-		mma->flags = (1 << 12) | (1 << 15);
+		maa->length += 4;
+		maa->flags = (1 << 12) | (1 << 15);
 		offset += sizeof(MobileAgentAdvertisement);
 		IPAddress * ipAddress = (IPAddress *) (packet->data() + offset);
 		memcpy(ipAddress, &_careofaddress, sizeof(IPAddress));
 		icmpheader->icmp_cksum = 0;
-		icmpheader->icmp_cksum = click_in_cksum((const unsigned char *) icmpheader, sizeof(click_icmp_echo) / 2 + sizeof(ICMPRouterAdvertisement) + sizeof(MobileAgentAdvertisement)) + sizeof(IPAddress));
+		icmpheader->icmp_cksum = click_in_cksum((const unsigned char *) icmpheader, sizeof(click_icmp_echo) / 2 + sizeof(ICMPRouterAdvertisement) + sizeof(MobileAgentAdvertisement) + sizeof(IPAddress));
 	}
 
 	//push the packet
