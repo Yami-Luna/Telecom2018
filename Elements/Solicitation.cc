@@ -12,7 +12,10 @@ Solicitation::Solicitation() : ctr(0) {}
 
 Solicitation::~Solicitation() {}
 
-int Solicitation::configure(Vector<String> &conf, ErrorHandler *errh) {
+int Solicitation::configure(Vector<String> &conf, ErrorHandler *errh)
+{
+	bool timerEnabled;
+
 	if (cp_va_kparse(conf, this, errh,
 					"SRC", cpkM, cpIPAddress, &src,
 					"DST", cpkM, cpIPAddress, &dst,
@@ -21,7 +24,8 @@ int Solicitation::configure(Vector<String> &conf, ErrorHandler *errh) {
 	return 0;
 }
 
-void Solicitation::sendSolicitation() {
+void Solicitation::sendSolicitation()
+{
 	click_chatter("MN -- Sending solicitation.");
 
 	// Create tge packet
@@ -71,11 +75,13 @@ void Solicitation::sendSolicitation() {
 	output(0).push(packet);
 }
 
-int sendSolicitationHandler(const String & data, Element * element, void * user_data, ErrorHandler * error) {
+int sendSolicitationHandler(const String & data, Element * element, void * user_data, ErrorHandler * error)
+{
 	((Solicitation *) element)->sendSolicitation();
 }
 
-void Solicitation::add_handlers() {
+void Solicitation::add_handlers()
+{
 	int data;
 	add_write_handler("sendSolicitation", sendSolicitationHandler, data, 0);
 }

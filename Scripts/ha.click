@@ -11,7 +11,7 @@
 //	[2]: packets destined for the router itself
 
 elementclass Agent {
-	$private_address, $public_address, $gateway, $broadcast, $lifetime, $registrationLifetime |
+	$private_address, $public_address, $gateway |
 
 	// Shared IP input path and routing table
 	ip :: Strip(14)
@@ -117,4 +117,9 @@ elementclass Agent {
 	public_frag[1]
 		-> ICMPError($public_address, unreachable, needfrag)
 		-> rt;
+
+	// Send advertisements
+	adv :: Advertisement(SRC $private_address, COA $public_address, TIMER true, ISHOME true, LIFETIME 10, REGLIFETIME 10)
+	-> EtherEncap(0x0800, $private_address:eth, FF:FF:FF:FF:FF:FF)
+	-> [1]output;
 }
