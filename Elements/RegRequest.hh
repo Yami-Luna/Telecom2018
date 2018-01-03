@@ -14,9 +14,9 @@ struct RegRequestData
 	uint8_t type;
 	uint8_t flags;
 	uint16_t lifetime;
-	struct in_addr home_address;
-	struct in_addr home_agent;
-	struct in_addr care_of_address;
+	struct in_addr homeAddress;
+	struct in_addr homeAgent;
+	struct in_addr careOfAddress;
 	uint64_t identification;
 };
 
@@ -34,7 +34,7 @@ class RegRequest : public Element {
 private:
 	IPAddress _gateway;
 	IPAddress _me;
-	uint16_t ctr;
+	uint16_t counter;
 	bool isMobileNode;
 	agentsMap agents;
 
@@ -59,17 +59,18 @@ private:
 
 	bool _registrated;
 
-	RegistrationReply * _rr;
+	RegReply * _rr;
 
 public:
-	RegistrationRequest();
-	~RegistrationRequest();
+	RegRequest();
+	~RegRequest();
 
-	const char *class_name() const { return "RegRequest"; }
-	const char *port_count() const { return "1/1"; }
-	const char *processing() const { return PUSH; }
+	const char *class_name() const	{ return "RegRequest"; }
+	const char *port_count() const	{ return "1/1"; }
+	const char *processing() const	{ return PUSH; }
 	int configure(Vector<String> &, ErrorHandler *);
 
+	void push_packet(Packet *);
 	void push(int, Packet *);
 	void run_timer(Timer *);
 
@@ -80,3 +81,4 @@ public:
 CLICK_ENDDECLS
 
 #endif
+
